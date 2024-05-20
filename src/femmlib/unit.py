@@ -30,3 +30,6 @@ class Unit:
         """
 
         return value * CONVERSION_RATE[self.name]
+
+
+type UnitLike = Unit | Name
