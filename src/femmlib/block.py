@@ -1,28 +1,64 @@
-from __future__ import annotations
-
 from dataclasses import dataclass
 from typing import Literal, Self
 
 import femm
-import vec
-from vec import Vec2, Vec2Like, to_vec2
 
-type MaterialName = Literal["Air", "Pure Iron", "18 AWG", "1010 Steel", "M-45 Steel"]
+from mathlib.vector2 import Vector2, Vector2Like
+
+type MaterialName = Literal[
+    'Air', 'Pure Iron', '18 AWG', '1010 Steel', 'M-45 Steel'
+]
+
+
+@dataclass
+class Block:
+    """
+    Propriedades do material.
+    """
+
+    name: MaterialName
+    position: Vector2
+    auto_mesh: bool
+    mesh_size: float
+    circuit_name: str
+    magnetization_direction: float
+    group: int
+    turns: int
+
+    def update(self) -> None:
+        """
+        Seleciona um rótulo existente na posição `Block.position` e atualiza as
+        propriedades nele.
+        """
+        femm.mi_selectlabel(*self.position)
+
+        # Define as propriedades do material. Assume que as propriedades estão
+        # na ordem que `mi_setblockprop()` necessita.
+        femm.mi_setblockprop(
+            self.name,
+            int(self.auto_mesh),
+            self.mesh_size,
+            self.circuit_name,
+            self.magnetization_direction,
+            self.group,
+            self.turns,
+        )
+        femm.mi_clearselected()
 
 
 class BlockBuilder:
-    def __init__(self, name: MaterialName, position: Vec2Like):
+    def __init__(self, name: MaterialName, position: Vector2Like):
         self.name: MaterialName = name
-        self.position = to_vec2(position)
+        self.position = Vector2.parse(position)
         self.auto_mesh: bool = True
         self.mesh_size: float = 0
-        self.circuit_name: str = ""
+        self.circuit_name: str = ''
         self.magnetization_direction: float = 0
         self.group: int = 0
         self.turns: int = 1
 
     def with_position(self, x: float, y: float) -> Self:
-        self.position = Vec2(x, y)
+        self.position = Vector2(x, y)
         return self
 
     def with_mesh_size(self, mesh_size: float) -> Self:
@@ -37,7 +73,9 @@ class BlockBuilder:
         self.circuit_name = circuit_name
         return self
 
-    def with_magnetization_direction(self, magnetization_direction: float) -> Self:
+    def with_magnetization_direction(
+        self, magnetization_direction: float
+    ) -> Self:
         """Direção do ângulo de magnetização em graus. Valor padrão: 0."""
         self.magnetization_direction = magnetization_direction
         return self
@@ -66,49 +104,6 @@ class BlockBuilder:
             self.group,
             self.turns,
         )
-        block.update_props()
+        block.update()
 
         return block
-
-
-@dataclass
-class Block:
-    """
-    Propriedades do material.
-    """
-
-    name: MaterialName
-    position: Vec2
-    auto_mesh: bool
-    mesh_size: float
-    circuit_name: str
-    magnetization_direction: float
-    group: int
-    turns: int
-
-    @staticmethod
-    def builder(name: MaterialName, position: Vec2Like) -> BlockBuilder:
-        """
-        - `name`: Nome do material.
-        """
-        return BlockBuilder(name, position)
-
-    def update_props(self) -> None:
-        """
-        Seleciona um rótulo existente na posição `Block.position` e atualiza as
-        propriedades nele.
-        """
-        femm.mi_selectlabel(*self.position)
-
-        # Define as propriedades do material. Assume que as propriedades estão
-        # na ordem que `mi_setblockprop()` necessita.
-        femm.mi_setblockprop(
-            self.name,
-            int(self.auto_mesh),
-            self.mesh_size,
-            self.circuit_name,
-            self.magnetization_direction,
-            self.group,
-            self.turns,
-        )
-        femm.mi_clearselected()
