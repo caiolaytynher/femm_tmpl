@@ -4,26 +4,27 @@ from dataclasses import dataclass
 from typing import Literal, Self
 
 import femm
+
 from helpers import PathLike, to_path
 
 type VectorPlotType = Literal[0, 1, 2, 3, 4, 5, 6]
 type DensityPlotType = Literal[
-    "bmag",
-    "breal",
-    "bimag",
-    "logb",
-    "hmag",
-    "hreal",
-    "himag",
-    "jmag",
-    "jreal",
-    "jimag",
+    'bmag',
+    'breal',
+    'bimag',
+    'logb',
+    'hmag',
+    'hreal',
+    'himag',
+    'jmag',
+    'jreal',
+    'jimag',
 ]
 
 
 class FigureBuilder:
     def __init__(self) -> None:
-        self.density_plot_type: DensityPlotType = "bmag"
+        self.density_plot_type: DensityPlotType = 'bmag'
         self.legend: bool = False
         self.gray_scale: bool = False
         self.density_upper_bound = 1.0
@@ -114,10 +115,6 @@ class Figure:
     density_lower_bound: float
     vector_plot_type: VectorPlotType
     arrow_scale_factor: float
-
-    @staticmethod
-    def builder() -> FigureBuilder:
-        return FigureBuilder()
 
     def save(self, file: PathLike) -> None:
         """
